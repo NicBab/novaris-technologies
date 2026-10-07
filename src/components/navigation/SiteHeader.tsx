@@ -25,9 +25,7 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 12);
-    };
+    const onScroll = () => setScrolled(window.scrollY > 12);
 
     onScroll();
 
@@ -35,9 +33,7 @@ export function SiteHeader() {
       passive: true,
     });
 
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-    };
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
@@ -47,14 +43,6 @@ export function SiteHeader() {
       document.body.style.overflow = "";
     };
   }, [open]);
-
-  const isActive = (href: string) => {
-    if (href === "/") {
-      return pathname === "/";
-    }
-
-    return pathname === href || pathname.startsWith(`${href}/`);
-  };
 
   return (
     <header
@@ -75,24 +63,34 @@ export function SiteHeader() {
 
           <span className="font-display text-sm font-semibold tracking-[0.18em] uppercase">
             Novaris
-            <span className="text-muted-foreground"> Technologies</span>
+            <span className="text-muted-foreground">
+              {" "}
+              Technologies
+            </span>
           </span>
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              aria-current={isActive(link.href) ? "page" : undefined}
-              className={cn(
-                "relative rounded-md px-3.5 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground",
-                isActive(link.href) && "text-foreground",
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {links.map((link) => {
+            const active =
+              link.href === "/"
+                ? pathname === "/"
+                : pathname === link.href ||
+                  pathname.startsWith(`${link.href}/`);
+
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "relative rounded-md px-3.5 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground",
+                  active && "text-foreground",
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
@@ -135,20 +133,27 @@ export function SiteHeader() {
       {open && (
         <div className="border-t border-border bg-background/98 backdrop-blur-xl lg:hidden">
           <nav className="mx-auto flex max-w-7xl flex-col px-5 py-4 sm:px-8">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setOpen(false)}
-                aria-current={isActive(link.href) ? "page" : undefined}
-                className={cn(
-                  "border-b border-border/60 py-4 font-display text-lg text-muted-foreground",
-                  isActive(link.href) && "text-foreground",
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {links.map((link) => {
+              const active =
+                link.href === "/"
+                  ? pathname === "/"
+                  : pathname === link.href ||
+                    pathname.startsWith(`${link.href}/`);
+
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "border-b border-border/60 py-4 font-display text-lg text-muted-foreground",
+                    active && "text-foreground",
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
 
             <Link
               href="/contact"

@@ -1,13 +1,15 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 
 import { NovarisMark } from "@/components/marketing/NovarisMark";
+import { products } from "@/data/products";
 
 export function SiteFooter() {
   return (
     <footer className="relative border-t border-border bg-surface">
       <div
         className="grid-lines pointer-events-none absolute inset-0 opacity-40"
-        aria-hidden="true"
+        aria-hidden
       />
 
       <div className="relative mx-auto max-w-7xl px-5 py-16 sm:px-8">
@@ -35,9 +37,14 @@ export function SiteFooter() {
           </FooterCol>
 
           <FooterCol title="Software">
-            <FooterLink href="/software">MotoDesk</FooterLink>
-            <FooterLink href="/software">WorkTrace</FooterLink>
-            <FooterLink href="/software">PropCore</FooterLink>
+            {products.map((product) => (
+              <FooterLink
+                key={product.slug}
+                href={`/software#${product.slug}`}
+              >
+                {product.name}
+              </FooterLink>
+            ))}
           </FooterCol>
 
           <FooterCol title="Services">
@@ -62,12 +69,14 @@ export function SiteFooter() {
             </FooterLink>
 
             <FooterLink href="/services#it-infrastructure">
-              IT &amp; Infrastructure
+              IT & Infrastructure
             </FooterLink>
           </FooterCol>
 
           <FooterCol title="Connect">
-            <FooterLink href="/contact">Contact</FooterLink>
+            <FooterLink href="/contact">
+              Contact
+            </FooterLink>
 
             <a
               href="https://www.linkedin.com"
@@ -110,7 +119,7 @@ function FooterCol({
   children,
 }: {
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div>
@@ -128,7 +137,7 @@ function FooterLink({
   children,
 }: {
   href: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <Link

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import { Toaster } from "sonner";
 
 import "./globals.css";
 
@@ -46,7 +47,7 @@ const organizationSchema = {
   "@type": "Organization",
   "@id": "https://novaristechus.com/#organization",
   name: "Novaris Technologies",
-   description:
+  description:
     "Novaris Technologies builds custom software, SaaS platforms, AI integrations, automation, infrastructure, and connected technology.",
   slogan: "Technology engineered around your business.",
 };
@@ -71,6 +72,7 @@ export default function RootLayout({
             __html: JSON.stringify(organizationSchema),
           }}
         />
+        <Toaster position="bottom-right" richColors closeButton />
       </body>
     </html>
   );

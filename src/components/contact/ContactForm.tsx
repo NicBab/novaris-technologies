@@ -41,20 +41,62 @@ const fieldClass =
 export function ContactForm() {
   const [submitting, setSubmitting] = useState(false);
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (submitting) {
+      return;
+    }
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
     setSubmitting(true);
 
-    setTimeout(() => {
-      setSubmitting(false);
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.get("name"),
+          company: formData.get("company"),
+          email: formData.get("email"),
+          phone: formData.get("phone"),
+          projectType: formData.get("projectType"),
+          budget: formData.get("budget"),
+          timeline: formData.get("timeline"),
+          description: formData.get("description"),
+          problem: formData.get("problem"),
+        }),
+      });
+
+      const result = (await response.json()) as {
+        success?: boolean;
+        error?: string;
+      };
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Unable to send your inquiry.");
+      }
 
       toast.success("Project inquiry received", {
         description:
           "We'll review the details and reply within one business day.",
       });
 
-      e.currentTarget?.reset?.();
-    }, 700);
+      form.reset();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unable to send your inquiry.";
+
+      toast.error("Unable to send inquiry", {
+        description: message,
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -81,17 +123,9 @@ export function ContactForm() {
               options={projectTypes}
             />
 
-            <Select
-              label="Estimated Budget"
-              name="budget"
-              options={budgets}
-            />
+            <Select label="Estimated Budget" name="budget" options={budgets} />
 
-            <Select
-              label="Timeline"
-              name="timeline"
-              options={timelines}
-            />
+            <Select label="Timeline" name="timeline" options={timelines} />
           </div>
         </fieldset>
 
@@ -116,10 +150,7 @@ export function ContactForm() {
           </div>
 
           <div>
-            <label
-              htmlFor="problem"
-              className="mb-2 block text-sm font-medium"
-            >
+            <label htmlFor="problem" className="mb-2 block text-sm font-medium">
               What problem are you trying to solve?
             </label>
 
@@ -159,10 +190,7 @@ function Field({
 }) {
   return (
     <div>
-      <label
-        htmlFor={name}
-        className="mb-2 block text-sm font-medium"
-      >
+      <label htmlFor={name} className="mb-2 block text-sm font-medium">
         {label}
       </label>
 
@@ -188,19 +216,11 @@ function Select({
 }) {
   return (
     <div>
-      <label
-        htmlFor={name}
-        className="mb-2 block text-sm font-medium"
-      >
+      <label htmlFor={name} className="mb-2 block text-sm font-medium">
         {label}
       </label>
 
-      <select
-        id={name}
-        name={name}
-        defaultValue=""
-        className={fieldClass}
-      >
+      <select id={name} name={name} defaultValue="" className={fieldClass}>
         <option value="" disabled>
           Select…
         </option>

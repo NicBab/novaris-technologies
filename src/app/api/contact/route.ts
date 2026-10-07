@@ -23,12 +23,10 @@ type ContactRequest = {
   timeline?: unknown;
   description?: unknown;
   problem?: unknown;
+  turnstileToken?: unknown;
 };
 
-function getString(
-  value: unknown,
-  maxLength: number,
-): string | null {
+function getString(value: unknown, maxLength: number): string | null {
   if (typeof value !== "string") {
     return null;
   }
@@ -85,15 +83,60 @@ function emailRow(label: string, value: string): string {
   `;
 }
 
+async function verifyTurnstile(token: string): Promise<boolean> {
+  const secretKey = process.env.TURNSTILE_SECRET_KEY;
+
+  if (!secretKey) {
+    console.error("TURNSTILE_SECRET_KEY is missing.");
+    return false;
+  }
+
+  try {
+    const response = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          secret: secretKey,
+          response: token,
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      console.error("Turnstile verification request failed:", response.status);
+
+      return false;
+    }
+
+    const result = (await response.json()) as {
+      success?: boolean;
+      "error-codes"?: string[];
+    };
+
+    if (!result.success) {
+      console.warn("Turnstile verification rejected:", result["error-codes"]);
+
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Turnstile verification error:", error);
+    return false;
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const apiKey = process.env.RESEND_API_KEY;
     const contactEmail = process.env.NOVARIS_CONTACT_EMAIL;
 
     if (!apiKey || !contactEmail) {
-      console.error(
-        "Contact form email configuration is missing.",
-      );
+      console.error("Contact form email configuration is missing.");
 
       return NextResponse.json(
         {
@@ -120,50 +163,29 @@ export async function POST(request: Request) {
       );
     }
 
-    const name = getString(
-      body.name,
-      MAX_FIELD_LENGTHS.name,
-    );
+    const name = getString(body.name, MAX_FIELD_LENGTHS.name);
 
-    const company = getString(
-      body.company,
-      MAX_FIELD_LENGTHS.company,
-    );
+    const company = getString(body.company, MAX_FIELD_LENGTHS.company);
 
-    const email = getString(
-      body.email,
-      MAX_FIELD_LENGTHS.email,
-    );
+    const email = getString(body.email, MAX_FIELD_LENGTHS.email);
 
-    const phone = getString(
-      body.phone,
-      MAX_FIELD_LENGTHS.phone,
-    );
+    const phone = getString(body.phone, MAX_FIELD_LENGTHS.phone);
 
     const projectType = getString(
       body.projectType,
       MAX_FIELD_LENGTHS.projectType,
     );
 
-    const budget = getString(
-      body.budget,
-      MAX_FIELD_LENGTHS.budget,
-    );
+    const budget = getString(body.budget, MAX_FIELD_LENGTHS.budget);
 
-    const timeline = getString(
-      body.timeline,
-      MAX_FIELD_LENGTHS.timeline,
-    );
+    const timeline = getString(body.timeline, MAX_FIELD_LENGTHS.timeline);
 
     const description = getString(
       body.description,
       MAX_FIELD_LENGTHS.description,
     );
 
-    const problem = getString(
-      body.problem,
-      MAX_FIELD_LENGTHS.problem,
-    );
+    const problem = getString(body.problem, MAX_FIELD_LENGTHS.problem);
 
     if (
       name === null ||
@@ -204,6 +226,32 @@ export async function POST(request: Request) {
         },
         {
           status: 400,
+        },
+      );
+    }
+
+    const turnstileToken = getString(body.turnstileToken, 2048);
+
+    if (!turnstileToken) {
+      return NextResponse.json(
+        {
+          error: "Security verification is required.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const turnstileValid = await verifyTurnstile(turnstileToken);
+
+    if (!turnstileValid) {
+      return NextResponse.json(
+        {
+          error: "Security verification failed. Please try again.",
+        },
+        {
+          status: 403,
         },
       );
     }

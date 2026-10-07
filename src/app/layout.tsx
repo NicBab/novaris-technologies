@@ -24,6 +24,7 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://novaristechus.com"),
   title: "Novaris Technologies — Software, Automation & AI Engineering",
   description:
     "Novaris Technologies builds software, intelligent automation, AI integrations, and technology infrastructure engineered around the way your business operates.",
@@ -43,11 +44,11 @@ export const metadata: Metadata = {
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
+  "@id": "https://novaristechus.com/#organization",
   name: "Novaris Technologies",
-  description:
-    "Software, automation, AI integration, and technology consulting company.",
-  slogan:
-    "We build intelligent systems for the way modern businesses operate.",
+   description:
+    "Novaris Technologies builds custom software, SaaS platforms, AI integrations, automation, infrastructure, and connected technology.",
+  slogan: "Technology engineered around your business.",
 };
 
 export default function RootLayout({

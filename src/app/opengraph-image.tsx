@@ -1,5 +1,7 @@
 import { ImageResponse } from "next/og";
 
+//http://localhost:3001/opengraph-image
+
 export const alt =
   "Novaris Technologies — Software, Systems, Automation & Intelligence";
 

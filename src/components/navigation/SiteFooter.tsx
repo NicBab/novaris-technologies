@@ -88,7 +88,7 @@ export function SiteFooter() {
             </a>
 
             <a
-              href="https://github.com"
+              href="https://github.com/Novaris-Technologies"
               target="_blank"
               rel="noreferrer"
               className="text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -105,8 +105,8 @@ export function SiteFooter() {
           </p>
 
           <div className="flex gap-6">
-            <span>Privacy</span>
-            <span>Terms</span>
+            <FooterLink href="/privacy">Privacy</FooterLink>
+            <FooterLink href="/terms">Terms</FooterLink>
           </div>
         </div>
       </div>

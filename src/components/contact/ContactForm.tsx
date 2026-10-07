@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
-
+import { Turnstile } from "@marsidev/react-turnstile";
 import { Reveal } from "@/components/motion/Reveal";
 
 const projectTypes = [
@@ -40,11 +40,21 @@ const fieldClass =
 
 export function ContactForm() {
   const [submitting, setSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (submitting) {
+      return;
+    }
+
+    if (!turnstileToken) {
+      toast.error("Security verification incomplete", {
+        description:
+          "Please wait a moment for the security check and try again.",
+      });
+
       return;
     }
 
@@ -69,6 +79,7 @@ export function ContactForm() {
           timeline: formData.get("timeline"),
           description: formData.get("description"),
           problem: formData.get("problem"),
+          turnstileToken,
         }),
       });
 
@@ -164,6 +175,23 @@ export function ContactForm() {
             />
           </div>
         </fieldset>
+
+        <Turnstile
+          siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""}
+          onSuccess={(token) => {
+            setTurnstileToken(token);
+          }}
+          onExpire={() => {
+            setTurnstileToken(null);
+          }}
+          onError={() => {
+            setTurnstileToken(null);
+          }}
+          options={{
+            theme: "auto",
+            size: "flexible",
+          }}
+        />
 
         <button
           type="submit"
